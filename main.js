@@ -2,10 +2,10 @@ const fs = require("fs");
 const { Client } = require("whatsapp-web.js");
 const qrcode = require("qrcode-terminal");
 const { OpenAI } = require("openai");
+require("dotenv").config();
 
 const openai = new OpenAI({
-  apiKey:
-    "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",
+  apiKey: process.env.OPENAI_API_KEY,
 });
 const client = new Client();
 
