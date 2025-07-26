@@ -7,7 +7,23 @@ require("dotenv").config();
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-const client = new Client();
+const client = new Client({
+  puppeteer: {
+      headless: true,
+      executablePath: '/usr/bin/chromium-browser', // Use system Chrome
+      args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-accelerated-2d-canvas',
+          '--no-first-run',
+          '--no-zygote',
+          '--disable-gpu',
+          '--disable-web-security',
+          '--disable-features=VizDisplayCompositor'
+      ]
+  }
+});
 
 
 let fileId;
@@ -32,21 +48,35 @@ async function uploadPDF() {
 
 // 2️⃣ Query via Responses API with file attachment
 async function askPDF(question) {
-    const response = await openai.responses.create({
-      model: "gpt-4o-mini",
-      input: [
-        {
-          role: "user",
-          content: [{ type: "input_text", text: question }],
-        },
-      ],
-      tools: [{ type: "file_search", vector_store_ids: [vectorStoreId] }],
-    });
-  
-    console.log("RAW RESPONSE:", JSON.stringify(response, null, 2));
-  
-    return response.output_text || "I couldn't find anything in the PDF.";
-  }
+  const response = await openai.responses.create({
+    model: "gpt-4o-mini",
+    input: [
+      {
+        role: "user",
+        content: [{
+          type: "input_text",
+          text: `Based on the attached document, please answer this question: ${question}
+
+          IMPORTANT: Answer like a friendly customer service representative. Use the information from the document as your own knowledge, but:
+          - Don't mention "the document says" or "according to the file"
+          - Don't include file references or citations
+          - Answer naturally and conversationally
+          - Be warm and helpful
+          - Keep it concise for WhatsApp
+          - Present the information as if it's your personal expertise
+
+          Question: ${question}`
+                  }],
+                },
+              ],
+              tools: [{ type: "file_search", vector_store_ids: [vectorStoreId] }],
+            });
+
+  console.log("RAW RESPONSE:", JSON.stringify(response, null, 2));
+
+  return response.output_text || "I couldn't find anything in the PDF.";
+}
+
   
   
 
