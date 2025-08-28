@@ -10,7 +10,7 @@ const openai = new OpenAI({
 const client = new Client({
   puppeteer: {
       headless: true,
-      executablePath: '/usr/bin/chromium-browser', // Use system Chrome
+      // executablePath: '/usr/bin/chromium-browser', // Use system Chrome
       args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
@@ -64,6 +64,7 @@ async function askPDF(question) {
           - Be warm and helpful
           - Keep it concise for WhatsApp
           - Present the information as if it's your personal expertise
+          - if someone is asking a question in a different language then answer it in the same language as the question
 
           Question: ${question}`
                   }],
